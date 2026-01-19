@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쇼핑 리스트</title>
+    <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --container-bg: #ffffff;
+            --header-bg: #667eea;
+            --input-bg: #ffffff;
+            --input-border: #e0e0e0;
+            --input-text: #333333;
+            --item-bg: #f8f9fa;
+            --item-hover: #f0f1f3;
+            --item-checked: #e8f5e9;
+            --item-text: #333333;
+            --item-text-checked: #999999;
+            --border-color: #eeeeee;
+            --stats-bg: #f8f9fa;
+            --stats-text: #666666;
+            --empty-text: #999999;
+            --delete-hover-bg: #ffebee;
+            --checkbox-hover: #f0f0ff;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --container-bg: #1e1e2e;
+            --header-bg: #2d2d44;
+            --input-bg: #2d2d44;
+            --input-border: #3d3d5c;
+            --input-text: #e0e0e0;
+            --item-bg: #2d2d44;
+            --item-hover: #3d3d5c;
+            --item-checked: #1e3a2f;
+            --item-text: #e0e0e0;
+            --item-text-checked: #888888;
+            --border-color: #3d3d5c;
+            --stats-bg: #252536;
+            --stats-text: #aaaaaa;
+            --empty-text: #777777;
+            --delete-hover-bg: #3d2a2a;
+            --checkbox-hover: #3d3d5c;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            transition: background 0.3s;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            overflow: hidden;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        header {
+            background: var(--header-bg);
+            color: white;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .input-section {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--container-bg);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .input-section input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            transition: border-color 0.2s, background 0.3s, color 0.3s;
+        }
+
+        .input-section input::placeholder {
+            color: var(--empty-text);
+        }
+
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-section button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .input-section button:hover {
+            background: #5a6fd6;
+        }
+
+        .list-container {
+            padding: 10px 20px 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: var(--container-bg);
+            transition: background 0.3s;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--empty-text);
+            padding: 40px 20px;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            background: var(--item-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .item:hover {
+            background: var(--item-hover);
+        }
+
+        .item.checked {
+            background: var(--item-checked);
+        }
+
+        .item.checked .item-text {
+            text-decoration: line-through;
+            color: var(--item-text-checked);
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            margin-right: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .checkbox:hover {
+            background: var(--checkbox-hover);
+        }
+
+        .item.checked .checkbox {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .checkbox::after {
+            content: '';
+            width: 10px;
+            height: 6px;
+            border-left: 2px solid white;
+            border-bottom: 2px solid white;
+            transform: rotate(-45deg);
+            opacity: 0;
+            margin-bottom: 2px;
+        }
+
+        .item.checked .checkbox::after {
+            opacity: 1;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 16px;
+            color: var(--item-text);
+            transition: color 0.3s;
+        }
+
+        .delete-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--empty-text);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 20px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: var(--delete-hover-bg);
+            color: #e53935;
+        }
+
+        .stats {
+            padding: 16px 20px;
+            background: var(--stats-bg);
+            text-align: center;
+            color: var(--stats-text);
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>쇼핑 리스트</h1>
+            <button class="theme-toggle" id="themeToggle" title="테마 변경">🌙</button>
+        </header>
+
+        <div class="input-section">
+            <input type="text" id="itemInput" placeholder="아이템을 입력하세요..." autofocus>
+            <button id="addBtn">추가</button>
+        </div>
+
+        <div class="list-container" id="listContainer">
+            <div class="empty-message">아이템을 추가해 주세요</div>
+        </div>
+
+        <div class="stats" id="stats"></div>
+    </div>
+
+    <script>
+        // DOM 요소 캐싱
+        const elements = {
+            input: document.getElementById('itemInput'),
+            addBtn: document.getElementById('addBtn'),
+            listContainer: document.getElementById('listContainer'),
+            stats: document.getElementById('stats'),
+            themeToggle: document.getElementById('themeToggle')
+        };
+
+        // 상태 관리
+        let items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        // localStorage 저장
+        const saveItems = () => {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        };
+
+        // HTML 이스케이프 (XSS 방지)
+        const escapeHtml = (text) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        };
+
+        // 테마 적용
+        const applyTheme = () => {
+            if (isDarkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                elements.themeToggle.textContent = '☀️';
+                elements.themeToggle.title = '라이트 모드로 변경';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                elements.themeToggle.textContent = '🌙';
+                elements.themeToggle.title = '다크 모드로 변경';
+            }
+        };
+
+        // 테마 토글
+        const toggleTheme = () => {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            applyTheme();
+        };
+
+        // 리스트 렌더링
+        const renderList = () => {
+            if (items.length === 0) {
+                elements.listContainer.innerHTML = '<div class="empty-message">아이템을 추가해 주세요</div>';
+                elements.stats.textContent = '';
+                return;
+            }
+
+            const checkedCount = items.filter(item => item.checked).length;
+            elements.stats.textContent = `총 ${items.length}개 중 ${checkedCount}개 완료`;
+
+            elements.listContainer.innerHTML = items
+                .map((item, index) => `
+                    <div class="item ${item.checked ? 'checked' : ''}" data-index="${index}">
+                        <div class="checkbox" data-action="toggle"></div>
+                        <span class="item-text">${escapeHtml(item.text)}</span>
+                        <button class="delete-btn" data-action="delete">×</button>
+                    </div>
+                `)
+                .join('');
+        };
+
+        // 아이템 추가
+        const addItem = () => {
+            const text = elements.input.value.trim();
+
+            if (text === '') return;
+
+            items.push({ text, checked: false });
+            saveItems();
+            renderList();
+            elements.input.value = '';
+            elements.input.focus();
+        };
+
+        // 아이템 토글
+        const toggleItem = (index) => {
+            items[index].checked = !items[index].checked;
+            saveItems();
+            renderList();
+        };
+
+        // 아이템 삭제
+        const deleteItem = (index) => {
+            items.splice(index, 1);
+            saveItems();
+            renderList();
+        };
+
+        // 이벤트 리스너 등록
+        const initEventListeners = () => {
+            // 추가 버튼 클릭
+            elements.addBtn.addEventListener('click', addItem);
+
+            // Enter 키 입력
+            elements.input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+
+            // 이벤트 위임: 리스트 컨테이너에서 클릭 이벤트 처리
+            elements.listContainer.addEventListener('click', (e) => {
+                const target = e.target;
+                const action = target.dataset.action;
+                const item = target.closest('.item');
+
+                if (!item || !action) return;
+
+                const index = parseInt(item.dataset.index, 10);
+
+                if (action === 'toggle') {
+                    toggleItem(index);
+                } else if (action === 'delete') {
+                    deleteItem(index);
+                }
+            });
+
+            // 테마 토글 버튼
+            elements.themeToggle.addEventListener('click', toggleTheme);
+        };
+
+        // 앱 초기화
+        const init = () => {
+            applyTheme();
+            initEventListeners();
+            renderList();
+        };
+
+        // DOMContentLoaded 시 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
